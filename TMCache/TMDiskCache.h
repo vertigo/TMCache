@@ -135,6 +135,12 @@ typedef id (^TMDiskCacheReadBlock)(TMDiskCache *cache, NSString *key, NSURL *fil
 + (dispatch_queue_t)sharedQueue;
 
 /**
+ Empties the trash with `DISPATCH_QUEUE_PRIORITY_BACKGROUND`. Does not block the <sharedQueue>.
+ */
++ (void)emptyTrash;
+
+
+/**
  The designated initializer. Multiple instances with the same name are allowed and can safely access
  the same data on disk thanks to the magic of seriality.
  

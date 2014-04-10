@@ -131,7 +131,7 @@ NSString * const TMCacheSharedName = @"TMCacheShared";
 
 - (void)setObject:(id <NSCoding>)object forKey:(NSString *)key block:(TMCacheObjectBlock)block
 {
-    return [self setObject:object forKey:key writeBlock:NULL block:block];
+    [self setObject:object forKey:key writeBlock:NULL block:block];
 }
 
 - (void)setObject:(id)object forKey:(NSString *)key writeBlock:(TMCacheWriteBlock)writeBlock block:(TMCacheObjectBlock)block
@@ -329,22 +329,26 @@ NSString * const TMCacheSharedName = @"TMCacheShared";
     if (!key)
         return nil;
     
-    __block id objectForKey = nil;
-
-    dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
-
-    [self objectForKey:key readBlock:readBlock block:^(TMCache *cache, NSString *key, id object) {
-        objectForKey = object;
-        dispatch_semaphore_signal(semaphore);
-    }];
-
-    dispatch_semaphore_wait(semaphore, DISPATCH_TIME_FOREVER);
-
-    #if !OS_OBJECT_USE_OBJC
-    dispatch_release(semaphore);
-    #endif
-
-    return objectForKey;
+    id object = [_memoryCache objectForKey:key];
+    
+    if (object) {
+        __weak TMCache *weakSelf = self;
+        dispatch_barrier_async(_queue, ^{
+            TMCache *strongSelf = weakSelf;
+            if (strongSelf)
+                [strongSelf->_diskCache fileURLForKey:key block:^(TMDiskCache *cache, NSString *key, id <NSCoding> object, NSURL *fileURL) {
+                    // update the access time on disk
+                }];
+        });
+    } else {
+        object = [_diskCache objectForKey:key];
+        
+        if (object) {
+            [_memoryCache setObject:object forKey:key block:nil];
+        }
+    };
+    
+    return object;
 }
 
 - (void)setObject:(id <NSCoding>)object forKey:(NSString *)key
@@ -423,4 +427,4 @@ NSString * const TMCacheSharedName = @"TMCacheShared";
 
 @end
 
-#pragma HC SVNT DRACONES
+// HC SVNT DRACONES
