@@ -64,7 +64,7 @@ typedef id (^TMCacheReadBlock)(TMCache *cache, NSString *key, NSURL *fileURL);
 + (instancetype)sharedCache;
 
 /**
- The designated initializer. Multiple instances with the same name are allowed and can safely access
+ Multiple instances with the same name are allowed and can safely access
  the same data on disk thanks to the magic of seriality. Also used to create the <diskCache>.
  
  @see name
@@ -72,6 +72,17 @@ typedef id (^TMCacheReadBlock)(TMCache *cache, NSString *key, NSURL *fileURL);
  @result A new cache with the specified name.
  */
 - (instancetype)initWithName:(NSString *)name;
+
+/**
+ The designated initializer. Multiple instances with the same name are allowed and can safely access
+ the same data on disk thanks to the magic of seriality. Also used to create the <diskCache>.
+ 
+ @see name
+ @param name The name of the cache.
+ @param rootPath The path of the cache on disk.
+ @result A new cache with the specified name.
+ */
+- (instancetype)initWithName:(NSString *)name rootPath:(NSString *)rootPath;
 
 #pragma mark -
 /// @name Asynchronous Methods
